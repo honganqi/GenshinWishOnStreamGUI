@@ -710,6 +710,8 @@ namespace GenshinImpact_WishOnStreamGUI
             else
                 btnMaximize.BackgroundImage = Images.Load("max");
         }
+
+        private void btnUpdateNotif_Click(object sender, EventArgs e) => GetUpdate();
         #endregion
 
 
@@ -1397,6 +1399,5 @@ namespace GenshinImpact_WishOnStreamGUI
                 panelDullBlades.Controls.Remove(control);
         }
         #endregion
-
     }
 }

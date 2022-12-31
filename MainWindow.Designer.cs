@@ -98,6 +98,7 @@ namespace GenshinImpact_WishOnStreamGUI
             this.btnUpdateNotif.Text = "vx.x is now available!\r\nGET IT NOW!";
             this.btnUpdateNotif.UseVisualStyleBackColor = false;
             this.btnUpdateNotif.Visible = false;
+            this.btnUpdateNotif.Click += new System.EventHandler(this.btnUpdateNotif_Click);
             // 
             // imgBMCSupport
             // 
@@ -491,6 +492,7 @@ namespace GenshinImpact_WishOnStreamGUI
             this.btnRevokeToken.TabIndex = 40;
             this.btnRevokeToken.Text = "Disconnect";
             this.btnRevokeToken.UseVisualStyleBackColor = true;
+            this.btnRevokeToken.Click += new System.EventHandler(this.btnRevokeToken_Click);
             // 
             // cmbRedeems
             // 
@@ -519,6 +521,7 @@ namespace GenshinImpact_WishOnStreamGUI
             this.imgTwitchConnect.Size = new System.Drawing.Size(200, 36);
             this.imgTwitchConnect.TabIndex = 37;
             this.imgTwitchConnect.TabStop = false;
+            this.imgTwitchConnect.Click += new System.EventHandler(this.imgTwitchConnect_Click);
             // 
             // labelDurationMS
             // 
@@ -605,6 +608,7 @@ namespace GenshinImpact_WishOnStreamGUI
             this.btnBrowse.TabIndex = 28;
             this.btnBrowse.Text = "Browse";
             this.btnBrowse.UseVisualStyleBackColor = true;
+            this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
             // labelPath
             // 
