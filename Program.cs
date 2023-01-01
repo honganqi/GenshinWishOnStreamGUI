@@ -12,16 +12,12 @@ namespace GenshinImpact_WishOnStreamGUI
         [STAThread]
         static void Main()
         {
-            /*
             if (Properties.Settings.Default.updateSettings)
             {
                 Properties.Settings.Default.Upgrade();
                 Properties.Settings.Default.updateSettings = false;
                 Properties.Settings.Default.Save();
             }
-            */
-
-            Properties.Settings.Default.Reset();
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
