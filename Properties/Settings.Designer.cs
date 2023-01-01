@@ -70,5 +70,17 @@ namespace GenshinImpact_WishOnStreamGUI.Properties {
                 this["windowState"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool updateSettings {
+            get {
+                return ((bool)(this["updateSettings"]));
+            }
+            set {
+                this["updateSettings"] = value;
+            }
+        }
     }
 }

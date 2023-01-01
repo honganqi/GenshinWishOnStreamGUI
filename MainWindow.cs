@@ -14,9 +14,6 @@ namespace GenshinImpact_WishOnStreamGUI
     {
         public Assembly imageAssembly = Assembly.GetExecutingAssembly();
 
-        //public panels.FormPanelSettings panelSettings;
-        //panels.FormPanelCharacters panelCharacters;
-        //panels.FormPanelDullBlades panelDullBlades;
         public bool mouseDown;
         public Point lastLocation;
 
@@ -48,13 +45,7 @@ namespace GenshinImpact_WishOnStreamGUI
         int lastItemY = 0;
         int currentMax = -1;
         int currentMin = -1;
-
-        Dictionary<string, Dictionary<string, Control>> ctrlCollection = new()
-        {
-            ["settings"] = new(),
-            ["characters"] = new(),
-            ["dullblades"] = new(),
-        };
+        int lastItemYDullBlade = 0;
 
 
         public MainWindow()
@@ -64,9 +55,6 @@ namespace GenshinImpact_WishOnStreamGUI
             ControlBox = false;
             Text = string.Empty;
 
-            //panelCharacters = new panels.FormPanelCharacters(this) { TopLevel = false, TopMost = true };
-            //panelDullBlades = new panels.FormPanelDullBlades(this) { TopLevel = false, TopMost = true };
-            //panelSettings = new panels.FormPanelSettings(this) { TopLevel = false, TopMost = true };
             authVar = new(this);
 
             imgBMCSupport.Image = Images.Load("bmc");
@@ -98,17 +86,26 @@ namespace GenshinImpact_WishOnStreamGUI
                     string pathCheck = Properties.Settings.Default.path;
                     List<string> failedFiles = CheckSettings(pathCheck);
                     CheckFiles(failedFiles, pathCheck);
-                    SwitchPanel(panelCharacters);
+                    if (failedFiles.Count > 0)
+                        SwitchPanel(panelSettings);
+                    else
+                        SwitchPanel(panelCharacters);
                 }
                 else
                 {
-                    MessageBox.Show("The specified path does not exist: \n" + Properties.Settings.Default.path);
+                    MessageBox.Show("The previously specified folder does not exist (anymore): \n" + Properties.Settings.Default.path + "\n\nPlease point this app to where the \"Genshin_Wish.html\" file is.");
                     SwitchPanel(panelSettings);
                 }
             }
             else
             {
-                SwitchPanel(panelSettings);
+                string pathCheck = Directory.GetCurrentDirectory();
+                List<string> failedFiles = CheckSettings(pathCheck);
+                CheckFiles(failedFiles, pathCheck);
+                if (failedFiles.Count > 0)
+                    SwitchPanel(panelSettings);
+                else
+                    SwitchPanel(panelCharacters);
             }
 
             // set window state
@@ -379,11 +376,21 @@ namespace GenshinImpact_WishOnStreamGUI
                 "user_settings.js",
                 "rates.js",
                 "choices.js",
+                "local_creds.js",
             };
             List<string> failedFiles = new();
+            if (!File.Exists(Path.Combine(pathCheck, "Genshin_Wish.html")))
+                failedFiles.Add("Genshin_Wish.html");
             foreach (string toCheck in filesToCheck)
+            {
                 if (!File.Exists(Path.Combine(pathCheck, "js/", toCheck)))
+                {
                     failedFiles.Add(toCheck);
+                    Console.WriteLine(toCheck);
+                }
+
+            }
+
 
             return failedFiles;
         }
@@ -402,7 +409,7 @@ namespace GenshinImpact_WishOnStreamGUI
                 wisherPath = pathCheck;
                 authVar.wisherPath = wisherPath;
                 SetPath(wisherPath);
-
+                Console.WriteLine(wisherPath);
                 ReadSettings();
 
                 btnPanelDullBlades.Show();
@@ -751,7 +758,6 @@ namespace GenshinImpact_WishOnStreamGUI
                 headerLabel.Location = new Point(xPos, initYPos);
                 headerLabel.AutoSize = true;
                 panelCharacters.Controls.Add(headerLabel);
-                ctrlCollection["characters"].Add(headerLabel.Name, headerLabel);
 
                 TextBox rateBox = new();
                 rateBox.Name = "rateBox_" + starValue;
@@ -760,7 +766,6 @@ namespace GenshinImpact_WishOnStreamGUI
                 rateBox.Width = 40;
                 rateBox.KeyDown += new KeyEventHandler(ValidateRateInput);
                 panelCharacters.Controls.Add(rateBox);
-                ctrlCollection["characters"].Add(rateBox.Name, rateBox);
 
                 Label rateLabel = new();
                 rateLabel.Name = "labelRate_" + starValue;
@@ -770,7 +775,6 @@ namespace GenshinImpact_WishOnStreamGUI
                 rateLabel.Height = rateBox.Height;
                 rateLabel.TextAlign = ContentAlignment.MiddleLeft;
                 panelCharacters.Controls.Add(rateLabel);
-                ctrlCollection["characters"].Add(rateLabel.Name, rateLabel);
 
                 if ((starNum == 1) || (starNum == starList.Count))
                 {
@@ -787,7 +791,6 @@ namespace GenshinImpact_WishOnStreamGUI
                     btnDel.TextAlign = ContentAlignment.MiddleCenter;
                     btnDel.Click += new EventHandler(btnDel_Click);
                     panelCharacters.Controls.Add(btnDel);
-                    ctrlCollection["characters"].Add(btnDel.Name, btnDel);
                 }
 
 
@@ -802,7 +805,6 @@ namespace GenshinImpact_WishOnStreamGUI
                     txtbox.Location = new Point(xPos, yPos);
                     txtbox.Width = columnWidth;
                     panelCharacters.Controls.Add(txtbox);
-                    ctrlCollection["characters"].Add(txtbox.Name, txtbox);
 
                     TextBox elemtxtbox = new();
                     elemtxtbox.Name = "txtElem_" + starValue + "_" + charNum;
@@ -811,7 +813,6 @@ namespace GenshinImpact_WishOnStreamGUI
                     elemtxtbox.Width = elementColumnWidth;
                     elemtxtbox.TextChanged += new EventHandler(TextChanged);
                     panelCharacters.Controls.Add(elemtxtbox);
-                    ctrlCollection["characters"].Add(elemtxtbox.Name, elemtxtbox);
 
                     charNum++;
                 }
@@ -824,14 +825,12 @@ namespace GenshinImpact_WishOnStreamGUI
                     txtbox.Location = new Point(xPos, yPos);
                     txtbox.Width = columnWidth;
                     panelCharacters.Controls.Add(txtbox);
-                    ctrlCollection["characters"].Add(txtbox.Name, txtbox);
 
                     TextBox elemtxtbox = new();
                     elemtxtbox.Name = "txtElem_" + starValue + "_" + charNumAgain;
                     elemtxtbox.Location = new Point(xPos + columnWidth + columnSplitter, yPos);
                     elemtxtbox.Width = elementColumnWidth;
                     panelCharacters.Controls.Add(elemtxtbox);
-                    ctrlCollection["characters"].Add(elemtxtbox.Name, elemtxtbox);
 
                     if ((yPos + rowHeight) > lastItemY)
                         lastItemY = (yPos + rowHeight);
@@ -851,7 +850,7 @@ namespace GenshinImpact_WishOnStreamGUI
             {
                 if (starValue > currentMax)
                 {
-                    foreach (Label labelSearch in Controls.OfType<Label>().Where(l => l.Name.StartsWith("labelHeader_")))
+                    foreach (Label labelSearch in panelCharacters.Controls.OfType<Label>().Where(l => l.Name.StartsWith("labelHeader_")))
                     {
                         string[] pair = labelSearch.Name.Split('_');
                         if (int.TryParse(pair[1], out int currentValue))
@@ -869,138 +868,149 @@ namespace GenshinImpact_WishOnStreamGUI
                     Control moveDel = panelCharacters.Controls["btnDelBot_" + currentMin];
                     currentMin = starValue;
                     moveDel.Name = "btnDelBot_" + currentMin;
+                    Console.WriteLine("DELETEING: " + moveDel.Name);
                 }
 
-            }
-            else
-                MessageBox.Show("The last Star Value of 1 is already present.", "Minimum Star Value", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
 
 
-            int xPos = initXPos;
-            if (position == -1)
-                foreach (Label labelSearch in panelCharacters.Controls.OfType<Label>().Where(l => l.Name.StartsWith("labelHeader_")))
-                    xPos += columnWidth + columnMargin + elementColumnWidth + columnSplitter;
-            int yPos = initYPos;
+                int xPos = initXPos;
+                if (position == -1)
+                    foreach (Label labelSearch in panelCharacters.Controls.OfType<Label>().Where(l => l.Name.StartsWith("labelHeader_")))
+                        xPos += columnWidth + columnMargin + elementColumnWidth + columnSplitter;
+                int yPos = initYPos;
 
-            Label headerLabel = new();
-            headerLabel.Name = "labelHeader_" + starValue;
-            headerLabel.Text = starValue + "-Star";
-            headerLabel.Font = new("Segoe UI", 15, FontStyle.Bold);
-            headerLabel.Location = new Point(xPos, initYPos);
-            headerLabel.AutoSize = true;
-            panelCharacters.Controls.Add(headerLabel);
+                Label headerLabel = new();
+                headerLabel.Name = "labelHeader_" + starValue;
+                headerLabel.Text = starValue + "-Star";
+                headerLabel.Font = new("Segoe UI", 15, FontStyle.Bold);
+                headerLabel.Location = new Point(xPos, initYPos);
+                headerLabel.AutoSize = true;
+                panelCharacters.Controls.Add(headerLabel);
 
-            TextBox rateBox = new();
-            rateBox.Name = "rateBox_" + starValue;
-            rateBox.Text = "0";
-            if (characters != null)
-                rateBox.Text = characters.PullRate.ToString();
-            rateBox.Location = new Point(xPos + headerLabel.Width, initYPos);
-            rateBox.Width = 40;
-            rateBox.KeyDown += new KeyEventHandler(ValidateRateInput);
-            panelCharacters.Controls.Add(rateBox);
+                TextBox rateBox = new();
+                rateBox.Name = "rateBox_" + starValue;
+                rateBox.Text = "0";
+                if (characters != null)
+                    rateBox.Text = characters.PullRate.ToString();
+                rateBox.Location = new Point(xPos + headerLabel.Width, initYPos);
+                rateBox.Width = 40;
+                rateBox.KeyDown += new KeyEventHandler(ValidateRateInput);
+                panelCharacters.Controls.Add(rateBox);
 
-            Label rateLabel = new();
-            rateLabel.Name = "labelRate_" + starValue;
-            rateLabel.Text = "% Pull Rate";
-            rateLabel.Font = new("Segoe UI", 8, FontStyle.Bold);
-            rateLabel.Location = new Point(xPos + headerLabel.Width + rateBox.Width, initYPos);
-            rateLabel.Height = rateBox.Height;
-            rateLabel.TextAlign = ContentAlignment.MiddleLeft;
-            panelCharacters.Controls.Add(rateLabel);
+                Label rateLabel = new();
+                rateLabel.Name = "labelRate_" + starValue;
+                rateLabel.Text = "% Pull Rate";
+                rateLabel.Font = new("Segoe UI", 8, FontStyle.Bold);
+                rateLabel.Location = new Point(xPos + headerLabel.Width + rateBox.Width, initYPos);
+                rateLabel.Height = rateBox.Height;
+                rateLabel.TextAlign = ContentAlignment.MiddleLeft;
+                panelCharacters.Controls.Add(rateLabel);
 
-            int charNum = 0;
-            if (characters != null)
-            {
-                foreach (Character character in characters)
+                int charNum = 0;
+                if (characters != null)
                 {
-                    string characterName = character.CharacterName;
+                    foreach (Character character in characters)
+                    {
+                        string characterName = character.CharacterName;
+                        yPos += rowHeight;
+                        TextBox txtbox = new();
+                        txtbox.Name = "txtChar_" + starValue + "_" + charNum;
+                        txtbox.Text = characterName;
+                        txtbox.Location = new Point(xPos, yPos);
+                        txtbox.Width = columnWidth;
+                        panelCharacters.Controls.Add(txtbox);
+
+                        TextBox elemtxtbox = new();
+                        elemtxtbox.Name = "txtElem_" + starValue + "_" + charNum;
+                        elemtxtbox.Text = character.Element;
+                        elemtxtbox.Location = new Point(xPos + columnWidth + columnSplitter, yPos);
+                        elemtxtbox.Width = elementColumnWidth;
+                        panelCharacters.Controls.Add(elemtxtbox);
+
+                        if ((yPos + rowHeight) > lastItemY)
+                            lastItemY = (yPos + rowHeight);
+                        charNum++;
+                    }
+                }
+
+                for (int charNumAgain = charNum; charNumAgain < (charNum + extraRows); charNumAgain++)
+                {
                     yPos += rowHeight;
                     TextBox txtbox = new();
-                    txtbox.Name = "txtChar_" + starValue + "_" + charNum;
-                    txtbox.Text = characterName;
+                    txtbox.Name = "txtChar_" + starValue + "_" + charNumAgain;
                     txtbox.Location = new Point(xPos, yPos);
                     txtbox.Width = columnWidth;
                     panelCharacters.Controls.Add(txtbox);
 
                     TextBox elemtxtbox = new();
-                    elemtxtbox.Name = "txtElem_" + starValue + "_" + charNum;
-                    elemtxtbox.Text = character.Element;
+                    elemtxtbox.Name = "txtElem_" + starValue + "_" + charNumAgain;
                     elemtxtbox.Location = new Point(xPos + columnWidth + columnSplitter, yPos);
                     elemtxtbox.Width = elementColumnWidth;
                     panelCharacters.Controls.Add(elemtxtbox);
 
                     if ((yPos + rowHeight) > lastItemY)
                         lastItemY = (yPos + rowHeight);
-                    charNum++;
                 }
+
+                lastItemX += columnWidth + columnMargin + elementColumnWidth + columnSplitter;
+
+                Control btnDelBot = panelCharacters.Controls["btnDelBot_" + currentMin];
+                btnDelBot.Location = new Point(lastItemX - btnDelBot.Width - columnMargin, initYPos);
+
+
             }
-
-            for (int charNumAgain = charNum; charNumAgain < (charNum + extraRows); charNumAgain++)
-            {
-                yPos += rowHeight;
-                TextBox txtbox = new();
-                txtbox.Name = "txtChar_" + starValue + "_" + charNum;
-                txtbox.Location = new Point(xPos, yPos);
-                txtbox.Width = columnWidth;
-                panelCharacters.Controls.Add(txtbox);
-
-                TextBox elemtxtbox = new();
-                elemtxtbox.Name = "txtElem_" + starValue + "_" + charNum;
-                elemtxtbox.Location = new Point(xPos + columnWidth + columnSplitter, yPos);
-                elemtxtbox.Width = elementColumnWidth;
-                panelCharacters.Controls.Add(elemtxtbox);
-
-                if ((yPos + rowHeight) > lastItemY)
-                    lastItemY = (yPos + rowHeight);
-            }
-
-            lastItemX += columnWidth + columnMargin + elementColumnWidth + columnSplitter;
-
-            Control btnDelBot = panelCharacters.Controls["btnDelBot_" + currentMin];
-            btnDelBot.Location = new Point(lastItemX - btnDelBot.Width - columnMargin, initYPos);
-
-            //UpdatePanel(lastItemX, lastItemY + (rowHeight * 2));
+            else
+                MessageBox.Show("The last Star Value of 1 is already present.", "Minimum Star Value", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private void DelColumn(int starValue)
+        private void DelCharacterColumn(int starValue)
         {
-            List<string> controlNames = new()
+            if (currentMax > currentMin)
             {
-                "labelHeader_",
-                "rateBox_",
-                "labelRate_",
-                "txtChar_",
-                "txtElem_",
-            };
-            List<Control> controls = new();
-            foreach (string controlName in controlNames)
-            {
-                foreach (Control control in panelCharacters.Controls.OfType<Control>().Where(c => c.Name.StartsWith(controlName + starValue)))
-                    controls.Add(control);
-            }
-
-            foreach (Control control in controls)
-                panelCharacters.Controls.Remove(control);
-
-            if (starValue == currentMax)
-            {
-                Control btnDelTop = panelCharacters.Controls["btnDelTop_" + currentMax];
-                btnDelTop.Name = "btnDelTop_" + currentMax;
-                foreach (Label labelHeader in panelCharacters.Controls.OfType<Label>().Where(l => l.Name.StartsWith("labelHeader_")))
+                List<string> controlNames = new()
                 {
-                    string[] pair = labelHeader.Name.Split('_');
-                    if (int.TryParse(pair[1], out int currentValue))
-                    {
-                        Control label = panelCharacters.Controls["labelHeader_" + currentValue];
-                        MoveCharacterControls(currentValue, -1);
-                    }
+                    "labelHeader_",
+                    "rateBox_",
+                    "labelRate_",
+                    "txtChar_",
+                    "txtElem_",
+                };
+                List<Control> controls = new();
+                foreach (string controlName in controlNames)
+                {
+                    foreach (Control control in panelCharacters.Controls.OfType<Control>().Where(c => c.Name.StartsWith(controlName + starValue)))
+                        controls.Add(control);
                 }
+
+                foreach (Control control in controls)
+                    panelCharacters.Controls.Remove(control);
+
+                if (starValue == currentMax)
+                {
+                    Control btnDelTop = panelCharacters.Controls["btnDelTop_" + currentMax];
+                    btnDelTop.Name = "btnDelTop_" + currentMax;
+                    foreach (Label labelHeader in panelCharacters.Controls.OfType<Label>().Where(l => l.Name.StartsWith("labelHeader_")))
+                    {
+                        string[] pair = labelHeader.Name.Split('_');
+                        if (int.TryParse(pair[1], out int currentValue))
+                        {
+                            Control label = panelCharacters.Controls["labelHeader_" + currentValue];
+                            MoveCharacterControls(currentValue, -1);
+                        }
+                    }
+                    currentMax--;
+                }
+
+
+                Control btnDelBot = panelCharacters.Controls["btnDelBot_" + currentMin];
+                btnDelBot.Location = new Point(btnDelBot.Location.X - (columnWidth + columnMargin + elementColumnWidth + columnSplitter), initYPos);
+                if (starValue == currentMin)
+                    currentMin++;
+                btnDelBot.Name = "btnDelBot_" + currentMin;
             }
-            Control btnDelBot = panelCharacters.Controls["btnDelBot_" + currentMin];
-            btnDelBot.Name = "btnDelBot_" + currentMin;
-            btnDelBot.Location = new Point(btnDelBot.Location.X - (columnWidth + columnMargin + elementColumnWidth + columnSplitter), initYPos);
+            else
+                MessageBox.Show("Why are you trying to eradicate all hopes and wishes?", "Error deleting column", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void btnAddStarValue_Click(object sender, EventArgs e)
@@ -1108,7 +1118,7 @@ namespace GenshinImpact_WishOnStreamGUI
             return starList;
         }
 
-        private void SortTableData(StarList starList)
+        private void SortCharacterData(StarList starList)
         {
             if (starList.Count > 0)
             {
@@ -1124,7 +1134,7 @@ namespace GenshinImpact_WishOnStreamGUI
             }
         }
 
-        private void btnSortCharacters_Click(object sender, EventArgs e) => SortTableData(ExtractDataFromCharactersPanel());
+        private void btnSortCharacters_Click(object sender, EventArgs e) => SortCharacterData(ExtractDataFromCharactersPanel());
 
         private void btnDel_Click(object sender, EventArgs e)
         {
@@ -1140,7 +1150,7 @@ namespace GenshinImpact_WishOnStreamGUI
                     MessageBoxIcon.Warning
                     );
                 if (dr == DialogResult.Yes)
-                    DelColumn(starValue);
+                    DelCharacterColumn(starValue);
             }
         }
 
@@ -1326,8 +1336,7 @@ namespace GenshinImpact_WishOnStreamGUI
             ClearDullBladesPanel();
             int xPos = initXPos;
             int yPos = initYPos;
-            lastItemX = 0;
-            lastItemY = 0;
+            lastItemYDullBlade = 0;
 
             int rownum = 0;
 
@@ -1351,14 +1360,9 @@ namespace GenshinImpact_WishOnStreamGUI
                 txtbox.Width = columnWidth;
                 panelDullBlades.Controls.Add(txtbox);
 
-                if ((yPos + rowHeight) > lastItemY)
-                    lastItemY = (yPos + rowHeight);
+                if ((yPos + rowHeight) > lastItemYDullBlade)
+                    lastItemYDullBlade = (yPos + rowHeight);
             }
-
-            xPos += columnWidth;
-            lastItemX = xPos;
-
-            Height = lastItemY + (rowHeight * 2);
         }
 
         public List<string> ExtractDataFromDullBladesPanel()
@@ -1390,7 +1394,6 @@ namespace GenshinImpact_WishOnStreamGUI
         private void btnSortDullBlades_Click(object sender, EventArgs e) => SortDullBladesData(ExtractDataFromDullBladesPanel());
         private void ClearDullBladesPanel()
         {
-            lastItemX = 0;
             List<Control> controls = new();
             foreach (Control control in panelDullBlades.Controls.OfType<Control>().Where(c => c.Name.StartsWith("txtDull_")))
                 controls.Add(control);
