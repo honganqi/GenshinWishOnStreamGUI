@@ -243,11 +243,16 @@ namespace GenshinImpact_WishOnStreamGUI
                     if (int.TryParse(userSettingsContents[5], out int duration))
                         userInfo.Duration = duration;
                 }
-                SetUserInfo(userInfo);
+
                 authVar.user = userInfo;
 
                 // get new token if user exists
-                authVar.GetUserInfo(token);
+                if (token != "")
+                {
+                    SetUserInfo(userInfo);
+                    authVar.GetUserInfo(token);
+                }
+
                 return true;
             }
 
@@ -384,11 +389,7 @@ namespace GenshinImpact_WishOnStreamGUI
             foreach (string toCheck in filesToCheck)
             {
                 if (!File.Exists(Path.Combine(pathCheck, "js/", toCheck)))
-                {
                     failedFiles.Add(toCheck);
-                    Console.WriteLine(toCheck);
-                }
-
             }
 
 
@@ -409,7 +410,7 @@ namespace GenshinImpact_WishOnStreamGUI
                 wisherPath = pathCheck;
                 authVar.wisherPath = wisherPath;
                 SetPath(wisherPath);
-                Console.WriteLine(wisherPath);
+
                 ReadSettings();
 
                 btnPanelDullBlades.Show();
@@ -868,7 +869,6 @@ namespace GenshinImpact_WishOnStreamGUI
                     Control moveDel = panelCharacters.Controls["btnDelBot_" + currentMin];
                     currentMin = starValue;
                     moveDel.Name = "btnDelBot_" + currentMin;
-                    Console.WriteLine("DELETEING: " + moveDel.Name);
                 }
 
 
@@ -1228,6 +1228,7 @@ namespace GenshinImpact_WishOnStreamGUI
                 cmbRedeems.SelectedIndex = cmbRedeems.FindStringExact(userInfo.Redeem);
             else
                 cmbRedeems.Items.Clear();
+                
             txtDuration.Text = userInfo.Duration.ToString();
 
             long rightNow = DateTimeOffset.Now.ToUnixTimeSeconds();
@@ -1284,7 +1285,7 @@ namespace GenshinImpact_WishOnStreamGUI
             if (wisherPath != "")
             {
                 long rightNow = DateTimeOffset.Now.ToUnixTimeSeconds();
-                if (rightNow < authVar.user.TokenExpiry)
+                if ((rightNow < authVar.user.TokenExpiry) || (authVar.user.TokenExpiry == 0) || (authVar.user.TokenExpiry == null))
                 {
                     string clientId = "rs83ihxx7l4k7jjeprsiz03ofvly8g";
                     string redirectURI = "http://localhost:8275";

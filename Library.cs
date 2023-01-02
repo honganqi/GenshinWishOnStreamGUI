@@ -130,14 +130,27 @@ namespace GenshinImpact_WishOnStreamGUI
             connectionErrors = new();
             ValidateToken(access_token);
             if (user.Name == "")
-                AcquireToken(access_token);
-            GetCustomRewards();
-            SaveCreds(user);
-            _mainwindow.DisplayConnectionErrors(connectionErrors);
+            {
+                await AcquireToken(access_token);
+
+                var rewards = await GetCustomRewards();
+                _mainwindow.UpdateSettingsRewards(rewards);
+                SaveCreds(user);
+                _mainwindow.DisplayConnectionErrors(connectionErrors);
+            }
+            else
+            {
+                var rewards = await GetCustomRewards();
+                _mainwindow.UpdateSettingsRewards(rewards);
+                SaveCreds(user);
+                _mainwindow.DisplayConnectionErrors(connectionErrors);
+            }
+
         }
 
-        private async void ValidateToken(string token)
+        private async Task<bool> ValidateToken(string token)
         {
+            bool end = true;
             using HttpRequestMessage requestMessage = new(HttpMethod.Get, "https://id.twitch.tv/oauth2/validate");
             requestMessage.Headers.Authorization = new("Bearer", token);
             try
@@ -154,13 +167,14 @@ namespace GenshinImpact_WishOnStreamGUI
                     user.TokenExpiry = timenow + tokenExpiresInSeconds;
                 }
             }
-            catch (Exception e)
+            catch
             {
                 connectionErrors.Add("Unable to validate existing token.");
             }
+            return end;
         }
 
-        private async void AcquireToken(string token)
+        private async Task AcquireToken(string token)
         {
             using HttpRequestMessage requestMessage = new(HttpMethod.Get, "https://id.twitch.tv/oauth2/userinfo");
             requestMessage.Headers.Authorization = new("Bearer", token);
@@ -212,8 +226,9 @@ namespace GenshinImpact_WishOnStreamGUI
             SaveCreds(user, true, true);
         }
 
-        private async void GetCustomRewards()
+        private async Task<List<string>> GetCustomRewards()
         {
+            List<string> rewards = new();
             using HttpRequestMessage redeemRequest = new(HttpMethod.Get, "https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=" + user.ID);
             Interwebs.httpClient.DefaultRequestHeaders.Add("Client-Id", CLIENT_ID);
             redeemRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", user.Token);
@@ -226,7 +241,6 @@ namespace GenshinImpact_WishOnStreamGUI
                 string[] separ = { "\"title\":\"" };
                 string[] splits = longjson.Split(separ, StringSplitOptions.RemoveEmptyEntries);
 
-                List<string> rewards = new();
                 int ctr = 0;
                 foreach (string split in splits)
                 {
@@ -238,13 +252,12 @@ namespace GenshinImpact_WishOnStreamGUI
                     }
                     ctr++;
                 }
-                _mainwindow.UpdateSettingsRewards(rewards);
             }
             catch
             {
                 connectionErrors.Add("Unable to fetch custom rewards.");
             }
-
+            return rewards;
         }
 
         public string SaveCreds(UserInfo userInfo, bool saveToFile = false, bool revoke = false)

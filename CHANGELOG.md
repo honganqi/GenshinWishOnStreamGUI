@@ -10,6 +10,10 @@ this file.
 * Upon first launch, the app now looks for the script files in
 the same folder
 ### Fixed
+* Fixed the "Connect to Twitch" button not working on initial
+launch
+* Fixed the issue where the Channel Point Rewards were not
+being listed after connecting to Twitch
 * Fixed numerous issues with adding and deleting columns of star
 values in the Characters page
 * Deleting the last remaining column of star value is no longer
