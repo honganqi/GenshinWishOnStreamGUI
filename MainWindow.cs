@@ -41,7 +41,6 @@ namespace GenshinImpact_WishOnStreamGUI
         const int initXPos = 20;
         const int extraRows = 5;
 
-        int lastItemX = 0;
         int lastItemY = 0;
         int currentMax = -1;
         int currentMin = -1;
@@ -735,7 +734,6 @@ namespace GenshinImpact_WishOnStreamGUI
         {
             ClearCharactersPanel();
             int xPos = initXPos;
-            lastItemX = 0;
             lastItemY = 0;
 
             int starNum = 1;
@@ -789,6 +787,7 @@ namespace GenshinImpact_WishOnStreamGUI
                     btnDel.Height = rateBox.Height;
                     btnDel.Width = rateBox.Height;
                     btnDel.Location = new Point(xPos + columnWidth + elementColumnWidth + columnSplitter - btnDel.Width, initYPos);
+                    Console.WriteLine("btnDel.Location: " + btnDel.Location.X);
                     btnDel.TextAlign = ContentAlignment.MiddleCenter;
                     btnDel.Click += new EventHandler(btnDel_Click);
                     panelCharacters.Controls.Add(btnDel);
@@ -838,8 +837,6 @@ namespace GenshinImpact_WishOnStreamGUI
                 }
 
                 xPos += columnWidth + columnMargin + elementColumnWidth + columnSplitter;
-                if ((xPos + columnWidth + elementColumnWidth + columnSplitter) > lastItemX)
-                    lastItemX = xPos;
 
                 starNum++;
             }
@@ -869,6 +866,7 @@ namespace GenshinImpact_WishOnStreamGUI
                     Control moveDel = panelCharacters.Controls["btnDelBot_" + currentMin];
                     currentMin = starValue;
                     moveDel.Name = "btnDelBot_" + currentMin;
+                    Console.WriteLine("moveDel.Location.X: " + moveDel.Location.X);
                 }
 
 
@@ -879,7 +877,7 @@ namespace GenshinImpact_WishOnStreamGUI
                     foreach (Label labelSearch in panelCharacters.Controls.OfType<Label>().Where(l => l.Name.StartsWith("labelHeader_")))
                         xPos += columnWidth + columnMargin + elementColumnWidth + columnSplitter;
                 int yPos = initYPos;
-
+  
                 Label headerLabel = new();
                 headerLabel.Name = "labelHeader_" + starValue;
                 headerLabel.Text = starValue + "-Star";
@@ -953,12 +951,10 @@ namespace GenshinImpact_WishOnStreamGUI
                         lastItemY = (yPos + rowHeight);
                 }
 
-                lastItemX += columnWidth + columnMargin + elementColumnWidth + columnSplitter;
-
                 Control btnDelBot = panelCharacters.Controls["btnDelBot_" + currentMin];
-                btnDelBot.Location = new Point(lastItemX - btnDelBot.Width - columnMargin, initYPos);
-
-
+                Console.WriteLine("NEW: " + btnDelBot.Location.X + " + " + (columnWidth + columnMargin + elementColumnWidth + columnSplitter));
+                btnDelBot.Location = new Point(btnDelBot.Location.X + (columnWidth + columnMargin + elementColumnWidth + columnSplitter), initYPos);
+                Console.WriteLine(" = " + btnDelBot.Location.X);
             }
             else
                 MessageBox.Show("The last Star Value of 1 is already present.", "Minimum Star Value", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -966,6 +962,15 @@ namespace GenshinImpact_WishOnStreamGUI
 
         private void DelCharacterColumn(int starValue)
         {
+
+
+            Control btnDelBot = panelCharacters.Controls["btnDelBot_" + currentMin];
+            Console.WriteLine(btnDelBot.Location.X + " - " + (columnWidth + columnMargin + elementColumnWidth + columnSplitter));
+            btnDelBot.Location = new Point(btnDelBot.Location.X - (columnWidth + columnMargin + elementColumnWidth + columnSplitter), initYPos);
+            Console.WriteLine(" = " + btnDelBot.Location.X);
+            if (starValue == currentMin)
+                currentMin++;
+            btnDelBot.Name = "btnDelBot_" + currentMin;
             if (currentMax > currentMin)
             {
                 List<string> controlNames = new()
@@ -1002,12 +1007,6 @@ namespace GenshinImpact_WishOnStreamGUI
                     currentMax--;
                 }
 
-
-                Control btnDelBot = panelCharacters.Controls["btnDelBot_" + currentMin];
-                btnDelBot.Location = new Point(btnDelBot.Location.X - (columnWidth + columnMargin + elementColumnWidth + columnSplitter), initYPos);
-                if (starValue == currentMin)
-                    currentMin++;
-                btnDelBot.Name = "btnDelBot_" + currentMin;
             }
             else
                 MessageBox.Show("Why are you trying to eradicate all hopes and wishes?", "Error deleting column", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -1156,7 +1155,6 @@ namespace GenshinImpact_WishOnStreamGUI
 
         private void ClearCharactersPanel()
         {
-            lastItemX = 0;
             List<string> controlNames = new()
             {
                 "labelHeader_",
