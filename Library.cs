@@ -5,9 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace GenshinImpact_WishOnStreamGUI
 {
@@ -111,13 +113,9 @@ namespace GenshinImpact_WishOnStreamGUI
         public static readonly HttpClient httpClient = new();
     }
 
-    public class AuthThings
+    public class AuthThings(MainWindow mainwindow)
     {
-        MainWindow _mainwindow;
-        public AuthThings(MainWindow mainwindow)
-        {
-            _mainwindow = mainwindow;
-        }
+        MainWindow _mainwindow = mainwindow;
         public string wisherPath = "";
         public UserInfo user;
         private const string CLIENT_ID = "rs83ihxx7l4k7jjeprsiz03ofvly8g";
@@ -128,8 +126,10 @@ namespace GenshinImpact_WishOnStreamGUI
         public async void GetUserInfo(string access_token)
         {
             connectionErrors = new();
-            ValidateToken(access_token);
-            if (user.Name == "")
+            bool userHasValidToken = await ValidateToken(access_token);
+
+            // need a check if the reset/disconnect button was clicked
+            if (!userHasValidToken)
             {
                 await AcquireToken(access_token);
 
@@ -150,7 +150,6 @@ namespace GenshinImpact_WishOnStreamGUI
 
         private async Task<bool> ValidateToken(string token)
         {
-            bool end = true;
             using HttpRequestMessage requestMessage = new(HttpMethod.Get, "https://id.twitch.tv/oauth2/validate");
             requestMessage.Headers.Authorization = new("Bearer", token);
             try
@@ -165,13 +164,14 @@ namespace GenshinImpact_WishOnStreamGUI
                     long timenow = DateTimeOffset.Now.ToUnixTimeSeconds();
                     long tokenExpiresInSeconds = int.Parse(receivedTokenInfo.TokenExpiresIn);
                     user.TokenExpiry = timenow + tokenExpiresInSeconds;
+                    return true;
                 }
             }
             catch
             {
                 connectionErrors.Add("Unable to validate existing token.");
             }
-            return end;
+            return false;
         }
 
         private async Task AcquireToken(string token)
@@ -186,14 +186,17 @@ namespace GenshinImpact_WishOnStreamGUI
                     Task<string> claimPage = claimResponse.Content.ReadAsStringAsync();
                     TwitchClaims claimResult = JsonConvert.DeserializeObject<TwitchClaims>(claimPage.Result);
 
-                    UserInfo userInfo = new(claimResult.Username, claimResult.User_ID);
-                    userInfo.Token = token;
-                    userInfo.TokenExpiry = int.Parse(claimResult.TokenExpiry);
+                    UserInfo userInfo = new(claimResult.Username, claimResult.User_ID)
+                    {
+                        Token = token,
+                        TokenExpiry = int.Parse(claimResult.TokenExpiry)
+                    };
                     if (user.ID == claimResult.User_ID)
                     {
                         userInfo.Redeem = user.Redeem;
                         userInfo.Duration = user.Duration;
                     }
+
                     user = userInfo;
                 }
             }
@@ -216,6 +219,7 @@ namespace GenshinImpact_WishOnStreamGUI
                 try
                 {
                     await Interwebs.httpClient.PostAsync("https://id.twitch.tv/oauth2/revoke", content);
+                    _mainwindow.userTokenized = false;
                 }
                 catch
                 {
@@ -230,28 +234,25 @@ namespace GenshinImpact_WishOnStreamGUI
         {
             List<string> rewards = new();
             using HttpRequestMessage redeemRequest = new(HttpMethod.Get, "https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=" + user.ID);
-            Interwebs.httpClient.DefaultRequestHeaders.Add("Client-Id", CLIENT_ID);
-            redeemRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", user.Token);
+            redeemRequest.Headers.Add("Client-ID", CLIENT_ID);
+            redeemRequest.Headers.Authorization = new ("Bearer", user.Token);
 
             try
             {
                 HttpResponseMessage redeemResponse = await Interwebs.httpClient.SendAsync(redeemRequest);
-                Task<string> redeemPage = redeemResponse.Content.ReadAsStringAsync();
-                string longjson = redeemPage.Result;
-                string[] separ = { "\"title\":\"" };
-                string[] splits = longjson.Split(separ, StringSplitOptions.RemoveEmptyEntries);
+                string responseBody = await redeemResponse.Content.ReadAsStringAsync();
+                UserResponse userData = JsonConvert.DeserializeObject<UserResponse>(responseBody);
 
-                int ctr = 0;
-                foreach (string split in splits)
+                if (userData != null && userData.Data != null)
                 {
-                    if (ctr != 0)
+                    int ctr = 0;
+                    foreach (UserData item in userData.Data)
                     {
-                        string search = "\",\"prompt\":";
-                        int index = split.IndexOf(search);
-                        rewards.Add(split.Substring(0, index));
+                        rewards.Add(item.Title);
+                        ctr++;
                     }
-                    ctr++;
                 }
+
             }
             catch
             {
@@ -299,6 +300,17 @@ namespace GenshinImpact_WishOnStreamGUI
 
             return errors;
         }
+    }
+
+    // Define a class to represent the structure of the JSON response
+    public class UserResponse
+    {
+        public UserData[] Data { get; set; }
+    }
+
+    public class UserData
+    {
+        public string Title { get; set; }
     }
 
     class Images
@@ -450,6 +462,13 @@ namespace GenshinImpact_WishOnStreamGUI
         public string DownloadURL { get; set; }
         [JsonProperty("description")]
         public string Description { get; set; }
+    }
+    class CharacterElementPair
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+        [JsonProperty("element")]
+        public string Element { get; set; }
     }
     #endregion
 

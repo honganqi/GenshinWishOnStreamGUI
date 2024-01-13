@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in
 this file.
 
+## 1.2 - 2023/01/14
+### Changed
+* Adapted to the changes to the script where array of strings
+were changed to array of character-element pairs
+### Fixed
+* Fixed issue where user is unable to reconnect Twitch account
+if the token is expired.
+
 ## 1.1 - 2023/01/02
 ### Added
 * A log file is now created when the app crashes

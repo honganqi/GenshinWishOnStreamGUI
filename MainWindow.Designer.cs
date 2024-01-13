@@ -55,6 +55,10 @@ namespace GenshinImpact_WishOnStreamGUI
             this.btnAddStarValue = new System.Windows.Forms.Button();
             this.labelTitleCharacters = new System.Windows.Forms.Label();
             this.panelSettings = new System.Windows.Forms.Panel();
+            this.chkCommand = new System.Windows.Forms.CheckBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.txtCommand = new System.Windows.Forms.TextBox();
+            this.chkRedeems = new System.Windows.Forms.CheckBox();
             this.btnRevokeToken = new System.Windows.Forms.Button();
             this.cmbRedeems = new System.Windows.Forms.ComboBox();
             this.labelTokenExpiry = new System.Windows.Forms.Label();
@@ -459,6 +463,9 @@ namespace GenshinImpact_WishOnStreamGUI
             this.panelSettings.AutoScroll = true;
             this.panelSettings.AutoSize = true;
             this.panelSettings.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.panelSettings.Controls.Add(this.chkCommand);
+            this.panelSettings.Controls.Add(this.label3);
+            this.panelSettings.Controls.Add(this.txtCommand);
             this.panelSettings.Controls.Add(this.btnRevokeToken);
             this.panelSettings.Controls.Add(this.cmbRedeems);
             this.panelSettings.Controls.Add(this.labelTokenExpiry);
@@ -474,6 +481,7 @@ namespace GenshinImpact_WishOnStreamGUI
             this.panelSettings.Controls.Add(this.btnBrowse);
             this.panelSettings.Controls.Add(this.labelPath);
             this.panelSettings.Controls.Add(this.labelPathLabel);
+            this.panelSettings.Controls.Add(this.chkRedeems);
             this.panelSettings.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelSettings.Location = new System.Drawing.Point(110, 36);
             this.panelSettings.Margin = new System.Windows.Forms.Padding(3, 5, 3, 5);
@@ -481,16 +489,55 @@ namespace GenshinImpact_WishOnStreamGUI
             this.panelSettings.Size = new System.Drawing.Size(823, 457);
             this.panelSettings.TabIndex = 16;
             // 
+            // chkCommand
+            // 
+            this.chkCommand.AutoSize = true;
+            this.chkCommand.Location = new System.Drawing.Point(197, 209);
+            this.chkCommand.Name = "chkCommand";
+            this.chkCommand.Size = new System.Drawing.Size(15, 14);
+            this.chkCommand.TabIndex = 44;
+            this.chkCommand.UseVisualStyleBackColor = true;
+            this.chkCommand.Visible = false;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(123, 207);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(68, 17);
+            this.label3.TabIndex = 43;
+            this.label3.Text = "Command";
+            this.label3.Visible = false;
+            // 
+            // txtCommand
+            // 
+            this.txtCommand.Enabled = false;
+            this.txtCommand.Location = new System.Drawing.Point(218, 204);
+            this.txtCommand.Name = "txtCommand";
+            this.txtCommand.Size = new System.Drawing.Size(244, 25);
+            this.txtCommand.TabIndex = 42;
+            this.txtCommand.Visible = false;
+            // 
+            // chkRedeems
+            // 
+            this.chkRedeems.AutoSize = true;
+            this.chkRedeems.Location = new System.Drawing.Point(197, 178);
+            this.chkRedeems.Name = "chkRedeems";
+            this.chkRedeems.Size = new System.Drawing.Size(15, 14);
+            this.chkRedeems.TabIndex = 41;
+            this.chkRedeems.UseVisualStyleBackColor = true;
+            this.chkRedeems.Visible = false;
+            // 
             // btnRevokeToken
             // 
             this.btnRevokeToken.AutoSize = true;
             this.btnRevokeToken.Enabled = false;
             this.btnRevokeToken.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnRevokeToken.Location = new System.Drawing.Point(471, 58);
+            this.btnRevokeToken.Location = new System.Drawing.Point(468, 55);
             this.btnRevokeToken.Name = "btnRevokeToken";
-            this.btnRevokeToken.Size = new System.Drawing.Size(74, 27);
+            this.btnRevokeToken.Size = new System.Drawing.Size(128, 27);
             this.btnRevokeToken.TabIndex = 40;
-            this.btnRevokeToken.Text = "Disconnect";
+            this.btnRevokeToken.Text = "Disconnect and Reset";
             this.btnRevokeToken.UseVisualStyleBackColor = true;
             this.btnRevokeToken.Click += new System.EventHandler(this.btnRevokeToken_Click);
             // 
@@ -498,9 +545,9 @@ namespace GenshinImpact_WishOnStreamGUI
             // 
             this.cmbRedeems.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbRedeems.FormattingEnabled = true;
-            this.cmbRedeems.Location = new System.Drawing.Point(200, 145);
+            this.cmbRedeems.Location = new System.Drawing.Point(197, 173);
             this.cmbRedeems.Name = "cmbRedeems";
-            this.cmbRedeems.Size = new System.Drawing.Size(345, 25);
+            this.cmbRedeems.Size = new System.Drawing.Size(265, 25);
             this.cmbRedeems.TabIndex = 39;
             // 
             // labelTokenExpiry
@@ -508,7 +555,7 @@ namespace GenshinImpact_WishOnStreamGUI
             this.labelTokenExpiry.AutoSize = true;
             this.labelTokenExpiry.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelTokenExpiry.ForeColor = System.Drawing.Color.Red;
-            this.labelTokenExpiry.Location = new System.Drawing.Point(197, 87);
+            this.labelTokenExpiry.Location = new System.Drawing.Point(194, 84);
             this.labelTokenExpiry.Name = "labelTokenExpiry";
             this.labelTokenExpiry.Size = new System.Drawing.Size(0, 13);
             this.labelTokenExpiry.TabIndex = 38;
@@ -516,7 +563,7 @@ namespace GenshinImpact_WishOnStreamGUI
             // imgTwitchConnect
             // 
             this.imgTwitchConnect.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.imgTwitchConnect.Location = new System.Drawing.Point(200, 103);
+            this.imgTwitchConnect.Location = new System.Drawing.Point(197, 99);
             this.imgTwitchConnect.Name = "imgTwitchConnect";
             this.imgTwitchConnect.Size = new System.Drawing.Size(200, 36);
             this.imgTwitchConnect.TabIndex = 37;
@@ -528,7 +575,7 @@ namespace GenshinImpact_WishOnStreamGUI
             this.labelDurationMS.AutoSize = true;
             this.labelDurationMS.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDurationMS.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.labelDurationMS.Location = new System.Drawing.Point(293, 182);
+            this.labelDurationMS.Location = new System.Drawing.Point(290, 148);
             this.labelDurationMS.Name = "labelDurationMS";
             this.labelDurationMS.Size = new System.Drawing.Size(89, 13);
             this.labelDurationMS.TabIndex = 36;
@@ -537,7 +584,7 @@ namespace GenshinImpact_WishOnStreamGUI
             // txtDuration
             // 
             this.txtDuration.Enabled = false;
-            this.txtDuration.Location = new System.Drawing.Point(200, 176);
+            this.txtDuration.Location = new System.Drawing.Point(197, 142);
             this.txtDuration.Name = "txtDuration";
             this.txtDuration.Size = new System.Drawing.Size(87, 25);
             this.txtDuration.TabIndex = 35;
@@ -545,7 +592,7 @@ namespace GenshinImpact_WishOnStreamGUI
             // labelDuration
             // 
             this.labelDuration.AutoSize = true;
-            this.labelDuration.Location = new System.Drawing.Point(74, 179);
+            this.labelDuration.Location = new System.Drawing.Point(71, 145);
             this.labelDuration.Name = "labelDuration";
             this.labelDuration.Size = new System.Drawing.Size(120, 17);
             this.labelDuration.TabIndex = 34;
@@ -556,7 +603,7 @@ namespace GenshinImpact_WishOnStreamGUI
             this.labelPathNotice.AutoSize = true;
             this.labelPathNotice.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelPathNotice.ForeColor = System.Drawing.Color.Red;
-            this.labelPathNotice.Location = new System.Drawing.Point(197, 312);
+            this.labelPathNotice.Location = new System.Drawing.Point(197, 285);
             this.labelPathNotice.Name = "labelPathNotice";
             this.labelPathNotice.Size = new System.Drawing.Size(314, 13);
             this.labelPathNotice.TabIndex = 33;
@@ -565,7 +612,7 @@ namespace GenshinImpact_WishOnStreamGUI
             // txtUsername
             // 
             this.txtUsername.Enabled = false;
-            this.txtUsername.Location = new System.Drawing.Point(200, 59);
+            this.txtUsername.Location = new System.Drawing.Point(197, 56);
             this.txtUsername.Name = "txtUsername";
             this.txtUsername.Size = new System.Drawing.Size(265, 25);
             this.txtUsername.TabIndex = 32;
@@ -573,7 +620,7 @@ namespace GenshinImpact_WishOnStreamGUI
             // labelRedeem
             // 
             this.labelRedeem.AutoSize = true;
-            this.labelRedeem.Location = new System.Drawing.Point(59, 148);
+            this.labelRedeem.Location = new System.Drawing.Point(56, 176);
             this.labelRedeem.Name = "labelRedeem";
             this.labelRedeem.Size = new System.Drawing.Size(135, 17);
             this.labelRedeem.TabIndex = 31;
@@ -582,7 +629,7 @@ namespace GenshinImpact_WishOnStreamGUI
             // labelUsername
             // 
             this.labelUsername.AutoSize = true;
-            this.labelUsername.Location = new System.Drawing.Point(88, 62);
+            this.labelUsername.Location = new System.Drawing.Point(85, 59);
             this.labelUsername.Name = "labelUsername";
             this.labelUsername.Size = new System.Drawing.Size(106, 17);
             this.labelUsername.TabIndex = 30;
@@ -602,7 +649,7 @@ namespace GenshinImpact_WishOnStreamGUI
             // 
             this.btnBrowse.AutoSize = true;
             this.btnBrowse.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnBrowse.Location = new System.Drawing.Point(200, 282);
+            this.btnBrowse.Location = new System.Drawing.Point(200, 255);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(63, 27);
             this.btnBrowse.TabIndex = 28;
@@ -615,7 +662,7 @@ namespace GenshinImpact_WishOnStreamGUI
             this.labelPath.AutoSize = true;
             this.labelPath.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelPath.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.labelPath.Location = new System.Drawing.Point(197, 266);
+            this.labelPath.Location = new System.Drawing.Point(197, 239);
             this.labelPath.Name = "labelPath";
             this.labelPath.Size = new System.Drawing.Size(213, 13);
             this.labelPath.TabIndex = 27;
@@ -624,7 +671,7 @@ namespace GenshinImpact_WishOnStreamGUI
             // labelPathLabel
             // 
             this.labelPathLabel.AutoSize = true;
-            this.labelPathLabel.Location = new System.Drawing.Point(48, 263);
+            this.labelPathLabel.Location = new System.Drawing.Point(48, 236);
             this.labelPathLabel.Name = "labelPathLabel";
             this.labelPathLabel.Size = new System.Drawing.Size(143, 17);
             this.labelPathLabel.TabIndex = 26;
@@ -754,6 +801,10 @@ namespace GenshinImpact_WishOnStreamGUI
         private System.Windows.Forms.Panel panelDullBlades;
         private System.Windows.Forms.Button btnSortDullBlades;
         private System.Windows.Forms.Label labelTitleDullBlades;
+        private System.Windows.Forms.CheckBox chkCommand;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txtCommand;
+        private System.Windows.Forms.CheckBox chkRedeems;
     }
 }
 

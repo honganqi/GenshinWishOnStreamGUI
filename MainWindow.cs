@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.Net;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace GenshinImpact_WishOnStreamGUI
 {
@@ -29,6 +30,7 @@ namespace GenshinImpact_WishOnStreamGUI
         HttpServer httpServer = new();
         public AuthThings authVar;
         UserInfo userInfo;
+        public bool userTokenized = false;
 
 
         // Characters "Panel" variables
@@ -176,7 +178,11 @@ namespace GenshinImpact_WishOnStreamGUI
             */
         }
 
-        public void RevokeToken() => authVar.RevokeToken();
+        public void RevokeToken()
+        {
+            authVar.RevokeToken();
+            cmbRedeems.Items.Clear();
+        }
 
         public void UpdateSettingsPanel(UserInfo userTransit)
         {
@@ -186,8 +192,7 @@ namespace GenshinImpact_WishOnStreamGUI
 
         public void UpdateSettingsRewards(List<string> rewards)
         {
-            List<string> rew = rewards;
-            SetRewards(rew);
+            SetRewards(rewards);
             SetUserInfo(userInfo);
         }
 
@@ -234,6 +239,7 @@ namespace GenshinImpact_WishOnStreamGUI
                 userInfo = new(name, id);
                 string token = userSettingsContents[2];
                 userInfo.Token = token;
+                userTokenized = true;
                 string redeem = userSettingsContents[4];
                 userInfo.Redeem = redeem;
                 if (int.TryParse(userSettingsContents[3], out int expiry))
@@ -289,82 +295,85 @@ namespace GenshinImpact_WishOnStreamGUI
         private bool GetChoices()
         {
             starList = new();
-            using (StreamReader sr = new(Path.Combine(wisherPath, "js/choices.js")))
+            using StreamReader sr = new(Path.Combine(wisherPath, "js/choices.js"));
+            int currentStarValue = 0;
+            bool isInsideCharacterBracket = false;
+            bool isInsideElementBracket = false;
+            bool isInsideDullBladesBracket = false;
+            List<CharacterElementPair> charElemPairList = new();
+
+            while (sr.Peek() >= 0)
             {
-                int currentStarValue = 0;
-                bool isInsideCharacterBracket = false;
-                bool isInsideElementBracket = false;
-                bool isInsideDullBladesBracket = false;
+                string line = sr.ReadLine().Trim();
+                string starValueStringStart = "choices[";
+                string starValueStringEnd = "];";
+                string elementDictionaryStart = "let elementDictionary = {";
+                string elementDictionaryEnd = "};";
+                string dullBladesStart = "let dullBlades = [";
+                string dullBladesEnd = "];";
 
-                while (sr.Peek() >= 0)
+                int starValueStringIndex = line.IndexOf(starValueStringStart);
+                int starValueStringEndIndex = line.IndexOf(starValueStringEnd);
+                int elementDictionaryStartIndex = line.IndexOf(elementDictionaryStart);
+                int elementDictionaryEndIndex = line.IndexOf(elementDictionaryEnd);
+                int dullBladesStartIndex = line.IndexOf(dullBladesStart);
+                int dullBladesEndIndex = line.IndexOf(dullBladesEnd);
+
+                if (starValueStringIndex >= 0)
                 {
-                    string line = sr.ReadLine().Trim();
-                    string starValueStringStart = "choices[";
-                    string starValueStringEnd = "];";
-                    string elementDictionaryStart = "let elementDictionary = {";
-                    string elementDictionaryEnd = "};";
-                    string dullBladesStart = "let dullBlades = [";
-                    string dullBladesEnd = "];";
+                    isInsideCharacterBracket = true;
+                    string[] pair = line.Split('=');
+                    string indexStr = pair[0].Remove(0, starValueStringStart.Length).Replace("]", "").Trim();
+                    if (!int.TryParse(indexStr, out currentStarValue))
+                        return false;
 
-                    int starValueStringIndex = line.IndexOf(starValueStringStart);
-                    int starValueStringEndIndex = line.IndexOf(starValueStringEnd);
-                    int elementDictionaryStartIndex = line.IndexOf(elementDictionaryStart);
-                    int elementDictionaryEndIndex = line.IndexOf(elementDictionaryEnd);
-                    int dullBladesStartIndex = line.IndexOf(dullBladesStart);
-                    int dullBladesEndIndex = line.IndexOf(dullBladesEnd);
+                    starList.AddStar(currentStarValue);
+                }
+                else if ((starValueStringEndIndex >= 0) && (isInsideCharacterBracket))
+                {
+                    isInsideCharacterBracket = false;
+                }
+                else if (isInsideCharacterBracket)
+                {
+                    //string name = line.Replace("\"", "").Replace("\'", "").Replace(",", "").Trim();
+                    CharacterElementPair charElemPair = JsonConvert.DeserializeObject<CharacterElementPair>(line.Trim(','));
+                    charElemPairList.Add(charElemPair);
+                    starList[currentStarValue].Add(charElemPair.Name);
+                    starList[currentStarValue][charElemPair.Name].Star = currentStarValue;
+                    starList[charElemPair.Name].Element = charElemPair.Element;
+                }
+                /*
+                else if (elementDictionaryStartIndex >= 0)
+                {
+                    isInsideElementBracket = true;
+                }
+                else if ((elementDictionaryEndIndex >= 0) && (isInsideElementBracket))
+                {
+                    isInsideElementBracket = false;
+                }
+                else if (isInsideElementBracket && line.Contains(':'))
+                {
+                    string[] pair = line.Split(':');
+                    string character = pair[0].Replace("\"", "").Replace("\'", "").Trim();
+                    string element = pair[1].Replace("\"", "").Replace("\'", "").Replace(",", "").Trim();
 
-                    if (starValueStringIndex >= 0)
-                    {
-                        isInsideCharacterBracket = true;
-                        string[] pair = line.Split('=');
-                        string indexStr = pair[0].Remove(0, starValueStringStart.Length).Replace("]", "").Trim();
-                        if (!int.TryParse(indexStr, out currentStarValue))
-                            return false;
+                    //starList[character].Element = element;
+                }
+                */
+                else if (dullBladesStartIndex >= 0)
+                {
+                    isInsideDullBladesBracket = true;
+                }
+                else if ((dullBladesEndIndex >= 0) && (isInsideDullBladesBracket))
+                {
+                    currentStarValue++;
+                    isInsideDullBladesBracket = false;
+                }
+                else if (isInsideDullBladesBracket)
+                {
+                    string dullBladeName = line.Replace("\"", "").Replace("\'", "").Replace(",", "").Trim();
 
-                        starList.AddStar(currentStarValue);
-                    }
-                    else if ((starValueStringEndIndex >= 0) && (isInsideCharacterBracket))
-                    {
-                        isInsideCharacterBracket = false;
-                    }
-                    else if (isInsideCharacterBracket)
-                    {
-                        string name = line.Replace("\"", "").Replace("\'", "").Replace(",", "").Trim();
-
-                        starList[currentStarValue].Add(name);
-                        starList[currentStarValue][name].Star = currentStarValue;
-                    }
-                    else if (elementDictionaryStartIndex >= 0)
-                    {
-                        isInsideElementBracket = true;
-                    }
-                    else if ((elementDictionaryEndIndex >= 0) && (isInsideElementBracket))
-                    {
-                        isInsideElementBracket = false;
-                    }
-                    else if (isInsideElementBracket && line.Contains(':'))
-                    {
-                        string[] pair = line.Split(':');
-                        string character = pair[0].Replace("\"", "").Replace("\'", "").Trim();
-                        string element = pair[1].Replace("\"", "").Replace("\'", "").Replace(",", "").Trim();
-
-                        starList[character].Element = element;
-                    }
-                    else if (dullBladesStartIndex >= 0)
-                    {
-                        isInsideDullBladesBracket = true;
-                    }
-                    else if ((dullBladesEndIndex >= 0) && (isInsideDullBladesBracket))
-                    {
-                        currentStarValue++;
-                        isInsideDullBladesBracket = false;
-                    }
-                    else if (isInsideDullBladesBracket && line.Contains('\"'))
-                    {
-                        string dullBladeName = line.Replace("\"", "").Replace("\'", "").Replace(",", "").Trim();
-
-                        dullBlades.Add(dullBladeName);
-                    }
+                    dullBlades.Add(dullBladeName);
                 }
             }
             return true;
@@ -469,13 +478,14 @@ namespace GenshinImpact_WishOnStreamGUI
 
                             foreach (Character character in charList)
                             {
-                                writer.WriteLine("\t\"" + character.CharacterName + "\",");
+                                writer.WriteLine("\t{name: \"" + character.CharacterName + "\", element: \"" + character.Element + "\"},");
                                 characterElements.Add(character.CharacterName, character.Element);
                             }
 
                             writer.WriteLine("];\n");
                         }
 
+                        /*
                         // character elements
                         writer.WriteLine("\n\n");
                         writer.WriteLine("let elementDictionary = {");
@@ -486,6 +496,7 @@ namespace GenshinImpact_WishOnStreamGUI
                             writer.WriteLine("\t\"" + charName + "\": \"" + element + "\",");
                         }
                         writer.WriteLine("};");
+                        */
 
                         // dull blades
                         if (dullBlades.Count > 0)
@@ -787,7 +798,6 @@ namespace GenshinImpact_WishOnStreamGUI
                     btnDel.Height = rateBox.Height;
                     btnDel.Width = rateBox.Height;
                     btnDel.Location = new Point(xPos + columnWidth + elementColumnWidth + columnSplitter - btnDel.Width, initYPos);
-                    Console.WriteLine("btnDel.Location: " + btnDel.Location.X);
                     btnDel.TextAlign = ContentAlignment.MiddleCenter;
                     btnDel.Click += new EventHandler(btnDel_Click);
                     panelCharacters.Controls.Add(btnDel);
@@ -811,7 +821,6 @@ namespace GenshinImpact_WishOnStreamGUI
                     elemtxtbox.Text = character.Element;
                     elemtxtbox.Location = new Point(xPos + columnWidth + columnSplitter, yPos);
                     elemtxtbox.Width = elementColumnWidth;
-                    elemtxtbox.TextChanged += new EventHandler(TextChanged);
                     panelCharacters.Controls.Add(elemtxtbox);
 
                     charNum++;
@@ -866,7 +875,6 @@ namespace GenshinImpact_WishOnStreamGUI
                     Control moveDel = panelCharacters.Controls["btnDelBot_" + currentMin];
                     currentMin = starValue;
                     moveDel.Name = "btnDelBot_" + currentMin;
-                    Console.WriteLine("moveDel.Location.X: " + moveDel.Location.X);
                 }
 
 
@@ -952,9 +960,7 @@ namespace GenshinImpact_WishOnStreamGUI
                 }
 
                 Control btnDelBot = panelCharacters.Controls["btnDelBot_" + currentMin];
-                Console.WriteLine("NEW: " + btnDelBot.Location.X + " + " + (columnWidth + columnMargin + elementColumnWidth + columnSplitter));
                 btnDelBot.Location = new Point(btnDelBot.Location.X + (columnWidth + columnMargin + elementColumnWidth + columnSplitter), initYPos);
-                Console.WriteLine(" = " + btnDelBot.Location.X);
             }
             else
                 MessageBox.Show("The last Star Value of 1 is already present.", "Minimum Star Value", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -965,9 +971,7 @@ namespace GenshinImpact_WishOnStreamGUI
 
 
             Control btnDelBot = panelCharacters.Controls["btnDelBot_" + currentMin];
-            Console.WriteLine(btnDelBot.Location.X + " - " + (columnWidth + columnMargin + elementColumnWidth + columnSplitter));
             btnDelBot.Location = new Point(btnDelBot.Location.X - (columnWidth + columnMargin + elementColumnWidth + columnSplitter), initYPos);
-            Console.WriteLine(" = " + btnDelBot.Location.X);
             if (starValue == currentMin)
                 currentMin++;
             btnDelBot.Name = "btnDelBot_" + currentMin;
@@ -1174,11 +1178,6 @@ namespace GenshinImpact_WishOnStreamGUI
                 panelCharacters.Controls.Remove(control);
         }
 
-        private void TextChanged(object sender, EventArgs e)
-        {
-            TextBox box = sender as TextBox;
-        }
-
         private void ValidateRateInput(object sender, KeyEventArgs e)
         {
             if (e.KeyData != Keys.Back)
@@ -1252,10 +1251,14 @@ namespace GenshinImpact_WishOnStreamGUI
 
         public void SetRewards(List<string> rewards)
         {
-            if (ControlInvokeRequired(cmbRedeems, () => SetRewards(rewards))) return;
-            cmbRedeems.Items.Clear();
-            foreach (string reward in rewards)
-                cmbRedeems.Items.Add(reward);
+            if (cmbRedeems.InvokeRequired)
+                cmbRedeems.Invoke(new Action<List<string>>(SetRewards), new object[] { rewards });
+            else
+            {
+                cmbRedeems.Items.Clear();
+                foreach (string reward in rewards)
+                    cmbRedeems.Items.Add(reward);
+            }
         }
 
 
@@ -1282,26 +1285,18 @@ namespace GenshinImpact_WishOnStreamGUI
         {
             if (wisherPath != "")
             {
-                long rightNow = DateTimeOffset.Now.ToUnixTimeSeconds();
-                if ((rightNow < authVar.user.TokenExpiry) || (authVar.user.TokenExpiry == 0) || (authVar.user.TokenExpiry == null))
-                {
-                    string clientId = "rs83ihxx7l4k7jjeprsiz03ofvly8g";
-                    string redirectURI = "http://localhost:8275";
-                    string state = Nonce(15);
-                    string scope = System.Web.HttpUtility.UrlEncode("channel:read:redemptions");
+                string clientId = "rs83ihxx7l4k7jjeprsiz03ofvly8g";
+                string redirectURI = "http://localhost:8275";
+                string state = Nonce(15);
+                string scope = System.Web.HttpUtility.UrlEncode("channel:read:redemptions");
 
-                    string url = "https://id.twitch.tv/oauth2/authorize" +
-                        "?response_type=token" +
-                        "&client_id=" + clientId +
-                        "&redirect_uri=" + redirectURI +
-                        "&state=" + state +
-                        "&scope=" + scope;
-                    System.Diagnostics.Process.Start(url);
-                }
-                else
-                {
-                    MessageBox.Show("Refreshing your Twitch Token is not yet needed since it hasn't expired yet.", "Token Refresh Not Needed", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                string url = "https://id.twitch.tv/oauth2/authorize" +
+                    "?response_type=token" +
+                    "&client_id=" + clientId +
+                    "&redirect_uri=" + redirectURI +
+                    "&state=" + state +
+                    "&scope=" + scope;
+                System.Diagnostics.Process.Start(url);
             }
             else
             {
@@ -1366,8 +1361,6 @@ namespace GenshinImpact_WishOnStreamGUI
 
         public List<string> ExtractDataFromDullBladesPanel()
         {
-            int currentTotal = 0;
-
             List<string> dullBlades = new();
             List<string> errors = new();
 
@@ -1402,4 +1395,6 @@ namespace GenshinImpact_WishOnStreamGUI
         }
         #endregion
     }
+
+
 }
