@@ -458,7 +458,7 @@ namespace GenshinImpact_WishOnStreamGUI
         public string ReleaseDate { get; set; }
         [JsonProperty("version")]
         public string Version { get; set; }
-        [JsonProperty("downloadurl")]
+        [JsonProperty("download_url")]
         public string DownloadURL { get; set; }
         [JsonProperty("description")]
         public string Description { get; set; }

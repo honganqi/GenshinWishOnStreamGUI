@@ -1,6 +1,6 @@
 {
 	"version": "1.2.0.0",
 	"release_date": "2024-01-13T17:21:00",
-	"download_url": "https://github.com/honganqi/GenshinWishOnStreamGUI/releases/download/v1.2/GenshinWishOnStreamGUI.zip",
-	"description": "Fixed add/delete column bugs, etc."
+	"download_url": "https://github.com/honganqi/GenshinWishOnStreamGUI/releases/download/v1.2/GenshinWishOnStreamGUI.1.2.WithScript.zip",
+	"description": "Fixed unable to reconnect to Twitch"
 }

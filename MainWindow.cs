@@ -577,7 +577,7 @@ namespace GenshinImpact_WishOnStreamGUI
                 if (response.IsSuccessStatusCode)
                 {
                     var page = response.Content.ReadAsStringAsync();
-                    VersionClass queryResult = Newtonsoft.Json.JsonConvert.DeserializeObject<VersionClass>(page.Result);
+                    VersionClass queryResult = JsonConvert.DeserializeObject<VersionClass>(page.Result);
 
                     if ((queryResult != null) && (queryResult.ReleaseDate != null))
                     {
@@ -585,6 +585,7 @@ namespace GenshinImpact_WishOnStreamGUI
                         string onlineVerString = queryResult.Version;
                         string currentVerString = Application.ProductVersion;
                         downloadURL = queryResult.DownloadURL;
+                        Console.WriteLine(downloadURL);
                         if (onlineVerString.CompareTo(currentVerString) > 0)
                         {
                             List<string> versionSplit = onlineVerString.Split('.').ToList();
@@ -638,7 +639,7 @@ namespace GenshinImpact_WishOnStreamGUI
 
         public void GetUpdate()
         {
-            if (downloadURL != "") System.Diagnostics.Process.Start(downloadURL);
+            if (downloadURL != "" && downloadURL != null) System.Diagnostics.Process.Start(downloadURL);
         }
         #endregion
 
