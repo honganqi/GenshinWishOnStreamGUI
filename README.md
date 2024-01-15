@@ -1,15 +1,21 @@
 # Genshin Impact: Wish On Stream GUI
-A GUI frontend to the Genshin Impact: Wish On Stream browser
-script meant for Twitch channel point rewards
+This is the GUI frontend to the Genshin Impact: Wish On Stream
+browser script meant for Twitch channel point rewards. You may
+also get the bundle with the script already included.
 
 ## About
-This is an optional GUI (graphical user interface) application
+~~This is an optional GUI (graphical user interface) application
 to authenticate and customize the Genshin Impact: Wish On Stream
-browser source.
+browser source.~~ Please get the bundle (the one with the script
+included) to save yourself the headache of downloading this GUI
+and that script separately. 
 
 ## Requirements
 * The Genshin Impact: Wish On Stream browser script
 [GitHub](https://github.com/honganqi/GenshinWishOnStream)
+
+## Tutorial Video
+[![LET YOUR VIEWERS WISH ON STREAM! Genshin Impact: Wish On Stream tutorial!](https://img.youtube.com/vi/rmQtHKb_tLc/0.jpg)](https://youtu.be/rmQtHKb_tLc)
 
 ## Usage
 * Upon first use, you will see the `Settings` page where you can
