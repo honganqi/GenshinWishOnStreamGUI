@@ -1,4 +1,5 @@
 # Genshin Impact: Wish On Stream GUI
+## ⚠ This repository has been included in the main script and will no longer be updated. You may go to the main project at [honganqi/GenshinWishOnStream](https://github.com/honganqi/GenshinWishOnStream).
 This is the GUI frontend to the Genshin Impact: Wish On Stream
 browser script meant for Twitch channel point rewards. You may
 also get the bundle with the script already included.
